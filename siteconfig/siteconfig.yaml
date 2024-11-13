@@ -1,0 +1,71 @@
+---
+apiVersion: ran.openshift.io/v1
+kind: SiteConfig
+metadata:
+  name: "ocp4clustername"
+  namespace: "ocp4clustername"
+spec:
+  baseDomain: "<basedomain>"
+  pullSecretRef:
+    name: "pull-secret"
+  clusterImageSetNameRef: "img4.12.40-x86-64-appsub"
+  sshPublicKey: "<ssh_pub_key>"
+  clusters:
+  - clusterName: "ocp4clustername"
+    networkType: "OVNKubernetes"
+    clusterLabels:
+      common: true
+      5gcore-profile: true
+      group-smcix12: ""
+      sites : "ocp4clustername"
+    clusterNetwork:
+      - cidr: "10.128.0.0/14"
+        hostPrefix: 23
+    machineNetwork:
+      - cidr: "192.168.160.0/24"
+    serviceNetwork:
+      - "172.30.0.0/16"
+    #additionalNTPSources:
+    #  - "192.168.2.1"
+    nodes:
+      - hostName: "sno"
+        role: "master"
+        bmcAddress: "<bmc_address>"
+        bmcCredentialsName:
+          name: "bmc-secret"
+        bootMACAddress: "<mac_address>"
+        bootMode: "UEFI"
+        rootDeviceHints:
+          serialNumber: "<SN>"
+          #hctl: '1:0:0:0'
+        cpuset: "0-1,32-33"
+        nodeNetwork:
+          interfaces:
+            - name: "<interface1_name>"
+              macAddress: "<interface1_mac>"
+            - name: "<interface2_name>"
+              macAddress: "<interface2_mac>"
+          config:
+            interfaces:
+              - name: eno8303np0
+                type: ethernet
+                state: up
+                ipv4:
+                  enabled: true
+                  address:
+                  - ip: <interface_ip>
+                    prefix-length: 24
+                ipv6:
+                  enabled: false
+              - name: ens1f3 
+                type: ethernet
+                state: down
+            dns-resolver:
+              config:
+                server:
+                - <dns_ip>
+            routes:
+              config:
+              - destination: 0.0.0.0/0
+                next-hop-address: 192.168.160.1
+                next-hop-interface: eno8303np0  

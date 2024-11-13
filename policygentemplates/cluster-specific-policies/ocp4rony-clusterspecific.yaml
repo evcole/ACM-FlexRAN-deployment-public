@@ -1,0 +1,86 @@
+---
+apiVersion: ran.openshift.io/v1
+kind: PolicyGenTemplate
+metadata:
+  name: "ocp4clustername-clusterspecific"
+  namespace: "ztp-site"
+spec:
+  bindingRules:
+    name: "ocp4clustername"
+  mcp: "master"
+  remediationAction: inform
+  sourceFiles:
+    - fileName: AcceleratorsNS.yaml
+      policyName: "subscriptions-policy"
+    - fileName: AcceleratorsOperGroup.yaml
+      policyName: "subscriptions-policy"
+    - fileName: AcceleratorsSubscription.yaml
+      policyName: "subscriptions-policy"
+    - fileName: SriovFecClusterConfig.yaml
+      policyName: "fec-policy"
+      spec:
+        drainSkip: true
+        acceleratorSelector:
+          pciAddress: 0000:6f:00.0
+        physicalFunction:
+         bbDevConfig:
+          acc100:
+            # Programming mode: 0 = VF Programming, 1 = PF Programming
+            pfMode: false
+            numVfBundles: 16
+            maxQueueSize: 1024
+            uplink4G:
+              numQueueGroups: 0
+              numAqsPerGroups: 16
+              aqDepthLog2: 4
+            downlink4G:
+              numQueueGroups: 0
+              numAqsPerGroups: 16
+              aqDepthLog2: 4
+            uplink5G:
+              numQueueGroups: 4
+              numAqsPerGroups: 16
+              aqDepthLog2: 4
+            downlink5G:
+              numQueueGroups: 4
+              numAqsPerGroups: 16
+              aqDepthLog2: 4
+    - fileName: SriovNetworkNodePolicy.yaml
+      policyName: "sriov-netd-policy-ens1f3"
+      remediationAction: enforce
+      metadata:
+        name: "sriov-nnp-netd-ens1f3"
+      spec:
+        deviceType: netdevice
+        mtu: 1500
+        isRdma: false
+        nicSelector:
+          vendor: "8086"
+          deviceID: "1593"
+          pfNames: ["ens1f3#0-3"]
+        numVfs: 4
+        priority: 10
+        resourceName: pci_sriov_net_ens1f3_0    
+    - fileName: SriovNetwork.yaml
+      policyName: "sriov-network-policy-mh"
+      metadata:
+        name: "sriov-nw-mh"
+      spec:
+        resourceName: pci_sriov_net_ens1f3_0
+        networkNamespace: flexranl1
+        vlan: 806
+        ipam: |-
+          {"type": "static"}
+        linkState: auto
+    #- fileName: SriovNetwork.yaml
+     # policyName: "sriov-network-policy-vran-mgmt"
+      #metadata:
+       # name: "sriov-nw-vran-mgmt"
+      #spec:
+       # resourceName: pci_sriov_net_ens4f0_1
+        #networkNamespace: flexranl1
+        #vlan: 814
+        #ipam: |-
+        # {"type": "static"}
+        #linkState: auto
+   

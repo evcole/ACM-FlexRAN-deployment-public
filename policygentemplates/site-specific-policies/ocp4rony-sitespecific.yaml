@@ -1,0 +1,29 @@
+---
+apiVersion: ran.openshift.io/v1
+kind: PolicyGenTemplate
+metadata:
+  name: "ocp4clustername-sitespecific"
+  namespace: "ztp-site"
+spec:
+  bindingRules:
+    sites: "ocp4clustername"
+  remediationAction: enforce
+  mcp: "master"
+  sourceFiles:
+    - fileName: MachineConfigGeneric.yaml
+      policyName: "mc-test"
+      metadata:
+        labels:
+          machineconfiguration.openshift.io/role: master
+        name: 98-test-mc
+      spec:
+        config:
+          ignition:
+            version: 3.2.0
+          storage:
+            files:
+            - contents:
+                source: 'data:text/plain;charset=utf-8;base64,dGhpcyBpcyBhIHRlc3Q='
+              filesystem: root
+              mode: 420
+              path: /home/core/test-machine-config.txt
